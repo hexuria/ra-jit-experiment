@@ -4,10 +4,15 @@ An all-Rust app: NSH renders the UI (AppKit on macOS, UIKit on iOS), ra-jit
 recompiles edited functions and splices them into the **running** process.
 Save a file → both apps update in under a second, state intact, no restart.
 
-**Demo:** [one patch set splicing into the macOS app and iOS simulator at
-once](https://github.com/hexuria/ra-jit-experiment/issues/2) — 7 edits,
-`remounts 15` on both, same processes throughout
-([video](https://github.com/hexuria/ra-jit-experiment/raw/main/app/demo/stacknative-live-demo.mp4)).
+**Demo** ([issue #2](https://github.com/hexuria/ra-jit-experiment/issues/2)) —
+the Tetris UI builds itself live, from an empty canvas to a running game:
+
+![Live demo: canvas → title → stats → next box → board → controls → style flips, on macOS and iOS side by side](app/demo/stacknative-live-demo.gif)
+
+13 patches in ~80 s (gif at 2×), `remounts 0 → 13` on **both** apps,
+uptime and game state untouched. Each visible change is one `ra-jit`
+build + splice —
+[full video](https://github.com/hexuria/ra-jit-experiment/raw/main/app/demo/stacknative-live-demo.mp4).
 
 ## Layout
 
