@@ -130,12 +130,18 @@ levels → struct-layout boundary demo).
 - Real iOS devices: impossible — no writable+executable pages. Sim only.
 - Each target triple gets its own daemon worker (~4.5GB RSS each).
 
-## Upstream pins
+## Repositories
 
-- `nsh/` — longbridge/nsh @ `c2f019e6d46cd1bdd191dd736d4443fe6fcb25b9`,
-  unmodified.
-- `ra-jit/` — indexable-inc/ra-jit @ `4a8d2b5` plus the `live-ios-sim-1023`
-  work: const-eval min/max intrinsics, ios-sim live patching,
-  `ra_jit_live::anchor`, richer panic context. Its full git history
-  (upstream + those commits) is this repo's `main` branch.
-- `app/` — original code, this repo only.
+This repo (`hexuria/ra-jit-experiment`) is a snapshot of the working tree.
+The components live as real forks:
+
+- **`nsh/`** — [hexuria/native-shell](https://github.com/hexuria/native-shell),
+  fork of `longbridge/nsh`, pinned at `c2f019e6`. Unmodified.
+- **`ra-jit/`** — [hexuria/ra-jit](https://github.com/hexuria/ra-jit), fork
+  of `indexable-inc/ra-jit`, at `4a8d2b5` plus the
+  [`live-ios-sim-1023`](https://github.com/hexuria/ra-jit/tree/live-ios-sim-1023)
+  branch:
+  [the diff](https://github.com/hexuria/ra-jit/compare/main...live-ios-sim-1023)
+  is the const-eval min/max intrinsics, ios-sim live patching,
+  `ra_jit_live::anchor`, and richer panic context.
+- **`app/`** — original code, this repo only.
