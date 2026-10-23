@@ -147,3 +147,28 @@ levels → struct-layout boundary demo).
   the upstream commit the branch sits on — the fork's `main` is an
   unrelated project.)
 - **`app/`** — original code, this repo only.
+
+## Changes vs upstream
+
+**nsh: none.** Pinned at upstream `c2f019e6`, untouched.
+
+**ra-jit: 3 commits on `live-ios-sim-1023`** ([diff](https://github.com/hexuria/ra-jit/compare/upstream-base...live-ios-sim-1023)):
+
+- `crates/hir-ty-codegen/target.rs` — accept `*-apple-ios-*` triples with
+  the same Mach-O/EH-frame/AArch64 codegen as darwin; without it the
+  ios-sim build is refused outright.
+- `crates/ra-jit/src/cargo/plan.rs` — `Flavor::of` detects Apple link
+  lines driven by clang's `-target *-apple-*` (ios-sim links carry no
+  `-arch`, so they were misdetected as ELF and given ELF-only flags).
+- `crates/ra-jit-live/src/lib.rs` — enable the macOS splice module for
+  `ios`+`sim` (a simulator process is a macOS arm64 process) and add
+  `anchor(name, init)`: a non-generic home for process-lifetime state
+  that patched code can reach without owning a `static` or `thread_local`.
+- `vendor/rust-analyzer/crates/hir-ty/src/mir/eval/shim.rs` — dispatch the
+  1.99 sysroot's `minimum|maximum_number_nsz_f{32,64}` and
+  `minimum|maximumf{32,64}` intrinsics; without it `f32::max`/`min` in
+  const position (e.g. `to_hsla()`) cannot be evaluated and every
+  function touching the const silently falls back to a full rebuild.
+- `vendor/rust-analyzer/crates/hir-expand/src/files.rs` — when an ast id
+  is missing from a file's map, panic with the file id and macro call,
+  not just the bare id (diagnosed the `cfg!`-in-`#[component]` crash).
