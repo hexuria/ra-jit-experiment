@@ -27,7 +27,7 @@ fn main() -> impl std::process::Termination {
     platform::run_app(
         platform::AppSource::Rust(app_root()),
         platform::AppOptions {
-            title: "Stack Native".to_owned(),
+            title: "Native Stack".to_owned(),
             app_id: "ai.stacknative.app".to_owned(),
             size: (1100, 760),
             ..Default::default()

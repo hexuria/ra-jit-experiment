@@ -14,7 +14,7 @@ set -e
 cd "$(dirname "$0")"
 
 TARGET=aarch64-apple-ios-sim
-APP=StackNative
+APP="Native Stack"
 ID=ai.stacknative.app
 BUNDLE="target/ios-sim/$APP.app"
 

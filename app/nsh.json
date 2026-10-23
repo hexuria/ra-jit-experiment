@@ -1,5 +1,5 @@
 {
-  "name": "Stack Native",
+  "name": "Native Stack",
   "id": "ai.stacknative.app",
   "appearance": "system",
   "rust": ".",

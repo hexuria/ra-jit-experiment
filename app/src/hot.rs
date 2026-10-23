@@ -47,7 +47,7 @@ const fn flat(h: f32, s: f32, l: f32) -> AdaptiveColor {
     tone(hsla(h, s, l, 1.0), hsla(h, s, l, 1.0))
 }
 
-const ACCENT: AdaptiveColor = tone(rgb(0xc2402e).to_hsla(), rgb(0xe8806f).to_hsla());
+const ACCENT: AdaptiveColor = tone(rgb(0x2e6fc2).to_hsla(), rgb(0x7fb3f0).to_hsla());
 const CARD: AdaptiveColor = tone(hsla(0.0, 0.0, 1.0, 1.0), hsla(0.62, 0.09, 0.11, 1.0));
 const BORDER: AdaptiveColor = tone(hsla(0.15, 0.07, 0.86, 1.0), hsla(0.60, 0.08, 0.19, 1.0));
 const TEXT: AdaptiveColor = tone(hsla(0.60, 0.10, 0.09, 1.0), hsla(0.58, 0.24, 0.94, 1.0));
@@ -58,10 +58,10 @@ const UP: AdaptiveColor = tone(hsla(0.42, 0.75, 0.31, 1.0), hsla(0.42, 0.67, 0.6
 /// What a cell holds: 0 empty, 1..=7 the seven pieces, 8 a ghost.
 /// The palette is the place a demo recolors the whole game with one edit.
 const CELLS: [AdaptiveColor; 8] = [
-    flat(0.80, 0.12, 0.05), // 0 empty
-    flat(0.48, 0.90, 0.60), // 1 I — aqua
-    flat(0.16, 0.95, 0.62), // 2 O — gold
-    flat(0.88, 0.80, 0.65), // 3 T — magenta
+    flat(0.63, 0.40, 0.30), // 0 empty
+    flat(0.55, 1.00, 0.52), // 1 I — aqua
+    flat(0.50, 0.95, 0.58), // 2 O — gold
+    flat(0.75, 0.90, 0.62), // 3 T — magenta
     flat(0.38, 0.85, 0.60), // 4 S — lime
     flat(0.98, 0.85, 0.60), // 5 Z — coral
     flat(0.55, 0.90, 0.65), // 6 J — sky
@@ -71,12 +71,12 @@ const CELLS: [AdaptiveColor; 8] = [
 /// Board geometry: ten columns, twenty rows, twenty-pixel cells.
 pub const W: usize = 10;
 pub const H: usize = 20;
-const CELL: f32 = 20.0;
+const CELL: f32 = 14.0;
 
 /// Gravity: the piece falls one row every `GRAVITY` ticks of the 50 ms
 /// game clock — so 8 here is a row every 0.4 s. Editing this changes the
 /// speed of the game in progress, mid-fall.
-const GRAVITY: u64 = 8;
+const GRAVITY: u64 = 16;
 
 /// Points per 0, 1, 2, 3, 4 lines cleared at once (times level).
 const SCORES: [u32; 5] = [0, 40, 100, 300, 1200];
@@ -182,10 +182,13 @@ impl Game {
     }
 
     const fn spawn(&mut self) {
+        // A random column each spawn — with nobody steering, pieces
+        // spread across the board instead of towering up the middle.
+        let x = self.rand7() as i32;
         self.cur = Piece {
             kind: self.next,
             rot: 0,
-            x: (W / 2) as i32 - 2,
+            x,
             y: 0,
         };
         self.next = self.rand7();
@@ -277,12 +280,8 @@ pub(crate) fn tick() -> bool {
     let mut g = crate::live::game();
     g.tick_n += 1;
     if g.over {
-        // Attract mode: a new game a moment after the last ends — the
-        // rng keeps rolling so each run differs.
-        if g.tick_n.is_multiple_of(80) {
-            *g = Game { rng: g.rng, ..Game::new() };
-            return true;
-        }
+        // Dead board stays dead — only the reset button deals a new
+        // game, so a demo can see both apps react to the same press.
         return false;
     }
     if g.tick_n.is_multiple_of(GRAVITY) {
@@ -386,25 +385,29 @@ pub fn HotArea() -> impl IntoElement {
             view()
                 .flex_row()
                 .items_end()
-                .gap(px(18.0))
+                .gap(px(14.0))
                 .child(
-                    text("TETRIS")
-                        .text_size(px(28.0))
-                        .font_weight(FontWeight::BOLD)
-                        .text_color(ACCENT),
-                )
-                .child(
-                    text(move || {
-                        frame().get();
-                        let g = crate::live::game();
-                        if g.score > high.get_untracked() {
-                            high.set(g.score);
-                        }
-                        format!("score {} · lines {} · best {}", g.score, g.lines, high.get_untracked())
-                    })
-                    .text_size(px(13.0))
-                    .font_family("monospace")
-                    .text_color(MUTED),
+                    view()
+                        .gap(px(4.0))
+                        .child(
+                            text("LIVE PATCHED")
+                                .text_size(px(24.0))
+                                .font_weight(FontWeight::BOLD)
+                                .text_color(ACCENT),
+                        )
+                        .child(
+                            text(move || {
+                                frame().get();
+                                let g = crate::live::game();
+                                if g.score > high.get_untracked() {
+                                    high.set(g.score);
+                                }
+                                format!("score {} · lines {} · best {}", g.score, g.lines, high.get_untracked())
+                            })
+                            .text_size(px(12.0))
+                            .font_family("monospace")
+                            .text_color(MUTED),
+                        ),
                 )
                 .child(next_box()),
         )
@@ -414,7 +417,7 @@ pub fn HotArea() -> impl IntoElement {
                 .border_1()
                 .border_color(BORDER)
                 .border_curve(BorderCurve::Continuous)
-                .rounded(px(10.0))
+                .rounded(px(0.0))
                 .p(px(6.0))
                 .child(
                     view()
@@ -445,7 +448,7 @@ pub fn HotArea() -> impl IntoElement {
                 if crate::live::game().over {
                     "game over — reset to play again".to_owned()
                 } else {
-                    "anchored state: board survives patches".to_owned()
+                    "7 splices live — zero restarts, board kept".to_owned()
                 }
             })
             .text_size(px(12.0))
@@ -501,7 +504,7 @@ fn control(label: &'static str, press: fn()) -> impl IntoElement {
         .bg(CARD)
         .border_1()
         .border_color(BORDER)
-        .rounded(px(10.0))
+        .rounded(px(0.0))
         .border_curve(BorderCurve::Continuous)
         .on_press(move || press())
         .child(

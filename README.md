@@ -4,6 +4,11 @@ An all-Rust app: NSH renders the UI (AppKit on macOS, UIKit on iOS), ra-jit
 recompiles edited functions and splices them into the **running** process.
 Save a file → both apps update in under a second, state intact, no restart.
 
+**Demo:** [one patch set splicing into the macOS app and iOS simulator at
+once](https://github.com/hexuria/ra-jit-experiment/issues/2) — 7 edits,
+`remounts 15` on both, same processes throughout
+([video](https://github.com/hexuria/ra-jit-experiment/raw/main/app/demo/stacknative-live-demo.mp4)).
+
 ## Layout
 
 ```
