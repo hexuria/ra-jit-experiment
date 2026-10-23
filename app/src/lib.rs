@@ -32,6 +32,13 @@ const SHOW_NOTE: bool = false;
 #[cfg(not(target_os = "ios"))]
 const SHOW_NOTE: bool = true;
 
+/// Extra lift for the status bar so it clears the iPhone home indicator;
+/// desktop has no unsafe bottom edge.
+#[cfg(target_os = "ios")]
+const BAR_LIFT: f32 = 22.0;
+#[cfg(not(target_os = "ios"))]
+const BAR_LIFT: f32 = 0.0;
+
 const BG: AdaptiveColor = tone(hsla(0.17, 0.10, 0.95, 1.0), hsla(0.60, 0.11, 0.07, 1.0));
 const BAR: AdaptiveColor = tone(hsla(0.15, 0.05, 0.92, 1.0), hsla(0.60, 0.07, 0.10, 1.0));
 const BORDER: AdaptiveColor = tone(hsla(0.15, 0.07, 0.86, 1.0), hsla(0.60, 0.08, 0.19, 1.0));
@@ -60,12 +67,14 @@ pub fn App() -> impl IntoElement {
 
     view()
         .flex_1()
+        .h_full()
         .bg(BG)
         .child(
-            view().flex_1().child(dynamic(move || {
-                remount.get();
-                hot::hot_area()
-            })),
+            view().flex_1().child(each(
+                move || vec![remount.get()],
+                |&n| n,
+                move |_, _| hot::hot_area(),
+            )),
         )
         .child(
             view()
@@ -74,6 +83,7 @@ pub fn App() -> impl IntoElement {
                 .gap(px(16.0))
                 .px_4()
                 .py_2()
+                .pb(px(8.0 + BAR_LIFT))
                 .bg(BAR)
                 .border_t_1()
                 .border_t_color(BORDER)

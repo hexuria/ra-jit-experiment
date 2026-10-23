@@ -18,14 +18,11 @@
 //! thread-local data cannot splice on the iOS simulator (the link
 //! completes but is "not spliced: the patch has thread-local data", the
 //! binary relinks, and the running sim process is orphaned to
-//! restart-needed forever). macOS splices those patches fine — but plain
-//! `static`s keep this file patchable on both, so hot state lives in a
-//! `Mutex`, never a `thread_local!`.
-
-use std::{
-    sync::{Mutex, OnceLock},
-    time::Duration,
-};
+//! restart-needed forever). And a `static` here is just as wrong: local
+//! statics carry no name the splice can match, so every patch emits a
+//! private copy — patched code would see an empty board. State therefore
+//! lives behind `live`'s accessors, in a file no demo edits; this file
+//! holds only code on it, which is what a patch redirects.
 
 use nsh_core::ui::prelude::*;
 
@@ -50,7 +47,7 @@ const fn flat(h: f32, s: f32, l: f32) -> AdaptiveColor {
     tone(hsla(h, s, l, 1.0), hsla(h, s, l, 1.0))
 }
 
-const ACCENT: AdaptiveColor = tone(rgb(0xc2402e).to_hsla(), rgb(0xe8806f).to_hsla());
+const ACCENT: AdaptiveColor = tone(rgb(0x2e6fc2).to_hsla(), rgb(0x7fb3f0).to_hsla());
 const CARD: AdaptiveColor = tone(hsla(0.0, 0.0, 1.0, 1.0), hsla(0.62, 0.09, 0.11, 1.0));
 const BORDER: AdaptiveColor = tone(hsla(0.15, 0.07, 0.86, 1.0), hsla(0.60, 0.08, 0.19, 1.0));
 const TEXT: AdaptiveColor = tone(hsla(0.60, 0.10, 0.09, 1.0), hsla(0.58, 0.24, 0.94, 1.0));
@@ -60,30 +57,29 @@ const UP: AdaptiveColor = tone(hsla(0.42, 0.75, 0.31, 1.0), hsla(0.42, 0.67, 0.6
 
 /// What a cell holds: 0 empty, 1..=7 the seven pieces, 8 a ghost.
 /// The palette is the place a demo recolors the whole game with one edit.
-const CELLS: [AdaptiveColor; 9] = [
-    flat(0.80, 0.12, 0.05), // 0 empty
-    flat(0.48, 0.90, 0.60), // 1 I — aqua
-    flat(0.16, 0.95, 0.62), // 2 O — gold
-    flat(0.88, 0.80, 0.65), // 3 T — magenta
+const CELLS: [AdaptiveColor; 8] = [
+    flat(0.63, 0.40, 0.30), // 0 empty
+    flat(0.55, 1.00, 0.52), // 1 I — aqua
+    flat(0.50, 0.95, 0.58), // 2 O — gold
+    flat(0.75, 0.90, 0.62), // 3 T — magenta
     flat(0.38, 0.85, 0.60), // 4 S — lime
     flat(0.98, 0.85, 0.60), // 5 Z — coral
     flat(0.55, 0.90, 0.65), // 6 J — sky
     flat(0.05, 0.90, 0.60), // 7 L — tangerine
-    flat(0.60, 0.15, 0.30), // 8 ghost — where the piece lands
 ];
 
 /// Board geometry: ten columns, twenty rows, twenty-pixel cells.
 pub const W: usize = 10;
 pub const H: usize = 20;
-const CELL: f32 = 24.0;
+const CELL: f32 = 14.0;
 
 /// Gravity: the piece falls one row every `GRAVITY` ticks of the 50 ms
-/// game clock — so 4 here is a row every 0.2 s. Editing this changes the
+/// game clock — so 8 here is a row every 0.4 s. Editing this changes the
 /// speed of the game in progress, mid-fall.
-const GRAVITY: u64 = 4;
+const GRAVITY: u64 = 16;
 
 /// Points per 0, 1, 2, 3, 4 lines cleared at once (times level).
-const SCORES: [u32; 5] = [0, 120, 360, 1000, 2400];
+const SCORES: [u32; 5] = [0, 40, 100, 300, 1200];
 
 // ---------------------------------------------------------------------------
 // The game: plain process state and plain functions on it.
@@ -125,12 +121,9 @@ struct Piece {
     rot: u8,
     x: i32,
     y: i32,
-    /// The tick it spawned at — a field added by an edit: changing this
-    /// struct's layout is the edit ra-jit answers `Restart` to.
-    born: u64,
 }
 
-struct Game {
+pub(crate) struct Game {
     board: [[u8; W]; H],
     cur: Piece,
     next: u8,
@@ -142,11 +135,11 @@ struct Game {
 }
 
 impl Game {
-    /// `const` so `static GAME: Mutex<Game>` can make one at link time.
-    const fn new() -> Self {
+    /// `const` so `live`'s `static GAME: Mutex<Game>` can link-time it.
+    pub(crate) const fn new() -> Self {
         let mut g = Self {
             board: [[0; W]; H],
-            cur: Piece { kind: 0, rot: 0, x: 0, y: 0, born: 0 },
+            cur: Piece { kind: 0, rot: 0, x: 0, y: 0 },
             next: 0,
             score: 0,
             lines: 0,
@@ -189,12 +182,14 @@ impl Game {
     }
 
     const fn spawn(&mut self) {
+        // A random column each spawn — with nobody steering, pieces
+        // spread across the board instead of towering up the middle.
+        let x = self.rand7() as i32;
         self.cur = Piece {
             kind: self.next,
             rot: 0,
-            x: (W / 2) as i32 - 2,
+            x,
             y: 0,
-            born: self.tick_n,
         };
         self.next = self.rand7();
         if !self.fits(self.cur.kind, self.cur.rot, self.cur.x, self.cur.y) {
@@ -264,56 +259,32 @@ impl Game {
             if !self.over && self.cur.x + cx == x as i32 && ghost_y + cy == y as i32
                 && self.board[y][x] == 0
             {
-                return 8; // a ghost: where the piece will land
+                return 0; // a ghost: baseline renders it as empty
             }
         }
         self.board[y][x]
     }
 }
 
-/// The game, as plain process memory — patching changes code, not this.
-/// Only the engine thread locks, so the `Mutex` never actually waits.
-/// Deliberately not a `thread_local!`: thread-local data in a patch
-/// cannot splice on the iOS simulator (see the module docs).
-static GAME: Mutex<Game> = Mutex::new(Game::new());
-
-/// The repaint pulse: a signal the root owns, set up by `start`, so
-/// every remount finds the same one still ticking.
-static FRAME_SIG: OnceLock<Signal<u64>> = OnceLock::new();
-
+/// The game and its repaint pulse live behind [`live`]'s accessors:
+/// `static`s in this file would be re-emitted privately into every patch,
+/// so each generation of code would see an empty board and signal. What
+/// stays here is only code on the state — which patches do redirect.
 fn frame() -> Signal<u64> {
-    *FRAME_SIG.get().expect("hot::start() runs before the hot area")
-}
-
-/// Called once from `App`'s body — under the root owner, which never
-/// remounts, so `frame` and the tick interval below outlive every patch.
-/// `tick` itself is in this file: the interval calls whatever `tick`
-/// currently is, so game rules edit live without the clock ever stopping.
-pub fn start() {
-    let frame = signal(0u64);
-    let _ = FRAME_SIG.set(frame);
-    set_interval(Duration::from_millis(50), move || {
-        if tick() {
-            frame.update(|f| *f += 1);
-        }
-    });
+    crate::live::frame()
 }
 
 /// The game clock: gravity every `GRAVITY` calls. Returns whether the
 /// board changed — the caller bumps `frame` then, waking the cells.
-fn tick() -> bool {
-    let mut g = GAME.lock().unwrap();
+pub(crate) fn tick() -> bool {
+    let mut g = crate::live::game();
     g.tick_n += 1;
     if g.over {
-        // Attract mode: a new game a moment after the last ends — the
-        // rng keeps rolling so each run differs.
-        if g.tick_n.is_multiple_of(80) {
-            *g = Game { rng: g.rng, ..Game::new() };
-            return true;
-        }
+        // Dead board stays dead — only the reset button deals a new
+        // game, so a demo can see both apps react to the same press.
         return false;
     }
-    if g.tick_n.is_multiple_of(effective_gravity(&g)) {
+    if g.tick_n.is_multiple_of(GRAVITY) {
         g.gravity();
         true
     } else {
@@ -321,16 +292,10 @@ fn tick() -> bool {
     }
 }
 
-/// How many 50 ms ticks per row now: `GRAVITY` minus a notch per level —
-/// clearing lines makes the game speed up, and the floor is 2.
-fn effective_gravity(g: &Game) -> u64 {
-    GRAVITY.saturating_sub(g.level() as u64 - 1).max(2)
-}
-
 /// Run `f` on the game; bump `frame` if it changed anything.
 fn act(f: impl FnOnce(&mut Game) -> bool) {
     let changed = {
-        let mut g = GAME.lock().unwrap();
+        let mut g = crate::live::game();
         f(&mut g)
     };
     if changed {
@@ -376,12 +341,7 @@ pub fn soft_drop() {
         if g.over {
             return false;
         }
-        if g.fits(g.cur.kind, g.cur.rot, g.cur.x, g.cur.y + 1) {
-            g.cur.y += 1;
-            g.score += 1; // a point per row you pull the piece down
-        } else {
-            g.lock();
-        }
+        g.gravity();
         true
     });
 }
@@ -391,12 +351,9 @@ pub fn hard_drop() {
         if g.over {
             return false;
         }
-        let mut d = 0;
         while g.fits(g.cur.kind, g.cur.rot, g.cur.x, g.cur.y + 1) {
             g.cur.y += 1;
-            d += 1;
         }
-        g.score += 2 * d; // two points per row slammed
         g.lock();
         true
     });
@@ -428,25 +385,29 @@ pub fn HotArea() -> impl IntoElement {
             view()
                 .flex_row()
                 .items_end()
-                .gap(px(18.0))
+                .gap(px(14.0))
                 .child(
-                    text("TETRIS · LIVE")
-                        .text_size(px(28.0))
-                        .font_weight(FontWeight::BOLD)
-                        .text_color(ACCENT),
-                )
-                .child(
-                    text(move || {
-                        frame().get();
-                        let g = GAME.lock().unwrap();
-                        if g.score > high.get_untracked() {
-                            high.set(g.score);
-                        }
-                        format!("pts {} · lines {} · lv {} · best {}", g.score, g.lines, g.level(), high.get_untracked())
-                    })
-                    .text_size(px(13.0))
-                    .font_family("monospace")
-                    .text_color(MUTED),
+                    view()
+                        .gap(px(4.0))
+                        .child(
+                            text("NATIVE STACK")
+                                .text_size(px(24.0))
+                                .font_weight(FontWeight::BOLD)
+                                .text_color(ACCENT),
+                        )
+                        .child(
+                            text(move || {
+                                frame().get();
+                                let g = crate::live::game();
+                                if g.score > high.get_untracked() {
+                                    high.set(g.score);
+                                }
+                                format!("score {} · lines {} · best {}", g.score, g.lines, high.get_untracked())
+                            })
+                            .text_size(px(12.0))
+                            .font_family("monospace")
+                            .text_color(MUTED),
+                        ),
                 )
                 .child(next_box()),
         )
@@ -456,7 +417,7 @@ pub fn HotArea() -> impl IntoElement {
                 .border_1()
                 .border_color(BORDER)
                 .border_curve(BorderCurve::Continuous)
-                .rounded(px(10.0))
+                .rounded(px(0.0))
                 .p(px(6.0))
                 .child(
                     view()
@@ -478,7 +439,20 @@ pub fn HotArea() -> impl IntoElement {
                 .child(control("⟳", rotate_cw))
                 .child(control("▶", move_right))
                 .child(control("▼", soft_drop))
+                .child(control("drop", hard_drop))
                 .child(control("reset", restart)),
+        )
+        .child(
+            text(move || {
+                frame().get();
+                if crate::live::game().over {
+                    "game over — reset to play again".to_owned()
+                } else {
+                    "built live, top to bottom — game already running".to_owned()
+                }
+            })
+            .text_size(px(12.0))
+            .text_color(UP),
         )
 }
 
@@ -489,7 +463,7 @@ fn NextBox() -> impl IntoElement {
     let cell = |x: usize, y: usize| {
         let c = computed(move || {
             frame().get();
-            GAME.lock().unwrap().next_cell(x, y)
+            crate::live::game().next_cell(x, y)
         });
         view().w(px(11.0)).h(px(11.0)).bg(move || CELLS[c.get() as usize])
     };
@@ -514,7 +488,7 @@ fn NextBox() -> impl IntoElement {
 fn cell_view(x: usize, y: usize) -> impl IntoElement {
     let at = computed(move || {
         frame().get();
-        GAME.lock().unwrap().cell(x, y)
+        crate::live::game().cell(x, y)
     });
     view()
         .w(px(CELL - 1.0))
@@ -530,7 +504,7 @@ fn control(label: &'static str, press: fn()) -> impl IntoElement {
         .bg(CARD)
         .border_1()
         .border_color(BORDER)
-        .rounded(px(10.0))
+        .rounded(px(0.0))
         .border_curve(BorderCurve::Continuous)
         .on_press(move || press())
         .child(

@@ -390,7 +390,7 @@ pub fn HotArea() -> impl IntoElement {
                     view()
                         .gap(px(4.0))
                         .child(
-                            text("LIVE PATCHED")
+                            text("NATIVE STACK")
                                 .text_size(px(24.0))
                                 .font_weight(FontWeight::BOLD)
                                 .text_color(ACCENT),
@@ -448,7 +448,7 @@ pub fn HotArea() -> impl IntoElement {
                 if crate::live::game().over {
                     "game over — reset to play again".to_owned()
                 } else {
-                    "7 splices live — zero restarts, board kept".to_owned()
+                    "14 splices · zero restarts — ra-jit + nsh".to_owned()
                 }
             })
             .text_size(px(12.0))

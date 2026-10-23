@@ -55,7 +55,7 @@ case "${1:-next}" in
         ;;
     *)
         n=$(printf "%02d" "$1")
-        f=$(step_files | grep "/$n-" || true)
+        f=$(step_files | grep "/$n\.rs$" || step_files | grep "/$n-" || true)
         [ -n "$f" ] && apply "$f" && echo "$1" > "$POS_FILE" \
             || { echo "no step $1 — run: ./demo/demo.sh list"; exit 1; }
         ;;
