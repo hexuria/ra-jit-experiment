@@ -1,0 +1,7 @@
+{
+  "name": "Stack Native",
+  "id": "ai.stacknative.app",
+  "appearance": "system",
+  "rust": ".",
+  "root": "App"
+}

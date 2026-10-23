@@ -1,0 +1,328 @@
+---
+// The home hero's background: the site's dot grid drawn on a 2D canvas.
+// Each dot has its own seeded size, brightness and twinkle, and a slowly
+// drifting value-noise field decides where the grid shimmers, so the field
+// is irregular and mostly dark. Near the pointer a few dots light up more
+// than their neighbours and swell into the accent, inside a noise-perturbed
+// reach that trails the pointer a little, over a small faint halo. The
+// canvas never takes input: the listeners are on the hero, passive. It
+// fades toward the copy, so text keeps its contrast. Colors are the
+// `--hero-*` tokens below, read again when the theme changes.
+//
+// `?fieldperf` logs the mean draw time every 120 frames.
+---
+<canvas class="hero-field" aria-hidden="true"></canvas>
+
+<style is:global>
+  :root {
+    --hero-dot: rgba(255, 255, 255, 0.18);
+    --hero-dot-hot: var(--citrus, #c8f26d);
+    --hero-glow: rgba(200, 242, 109, 0.06);
+  }
+  html.light,
+  html:not(.dark) {
+    --hero-dot: rgba(22, 23, 26, 0.26);
+    --hero-dot-hot: #5a7a12;
+    --hero-glow: rgba(90, 122, 18, 0.05);
+  }
+  .hero-field {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  const SPACING = 26; // CSS px between dots
+  const MAX_DOTS = 2500;
+  const REACH = 150; // the pointer's mean reach, CSS px
+  const GLOW = 140; // the halo's radius, CSS px
+  const BASE_LEVELS = 6;
+  const HOT_LEVELS = 6;
+  const STACKED = 1080; // under this width the hero stacks: copy above, device below
+  const NOISE = 32; // the value-noise lattice, NOISE × NOISE, wrapping
+
+  const smooth = (a: number, b: number, x: number) => {
+    const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+  };
+
+  // A seeded PRNG, so the field looks the same on every load.
+  let seed = 0x9e3779b9;
+  const rand = () => {
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    return (seed >>> 0) / 4294967296;
+  };
+  const lattice = new Float32Array(NOISE * NOISE);
+  for (let i = 0; i < lattice.length; i++) lattice[i] = rand();
+  /** Smooth value noise in [0, 1], wrapping every NOISE units. */
+  const noise = (x: number, y: number) => {
+    const fx = Math.floor(x), fy = Math.floor(y);
+    const ux = x - fx, uy = y - fy;
+    const sx = ux * ux * (3 - 2 * ux), sy = uy * uy * (3 - 2 * uy);
+    const x0 = ((fx % NOISE) + NOISE) % NOISE, y0 = ((fy % NOISE) + NOISE) % NOISE;
+    const x1 = (x0 + 1) % NOISE, y1 = (y0 + 1) % NOISE;
+    const a = lattice[y0 * NOISE + x0], b = lattice[y0 * NOISE + x1];
+    const c = lattice[y1 * NOISE + x0], d = lattice[y1 * NOISE + x1];
+    return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+  };
+
+  function mount(canvas: HTMLCanvasElement) {
+    const hero = (canvas.closest('.hero') as HTMLElement | null) ?? canvas.parentElement!;
+    const cx = canvas.getContext('2d');
+    if (!cx) return;
+    const root = document.documentElement;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const perf = location.search.includes('fieldperf');
+
+    let w = 0, h = 0, dpr = 1, n = 0;
+    let bx = new Float32Array(0), by = new Float32Array(0), side = new Float32Array(0);
+    // Per dot: size, brightness, twinkle phase and speed, how much the pointer lights it.
+    let size = new Float32Array(0), bright = new Float32Array(0), tphase = new Float32Array(0);
+    let tspeed = new Float32Array(0), pick = new Float32Array(0);
+    let baseBuckets = new Uint16Array(0), hotBuckets = new Uint16Array(0);
+    let hotF = new Float32Array(0), dxs = new Float32Array(0), dys = new Float32Array(0);
+    const baseCount = new Uint32Array(BASE_LEVELS);
+    const hotCount = new Uint32Array(HOT_LEVELS);
+
+    let dot = '', hot = '';
+    const glow = document.createElement('canvas');
+    const glowCtx = glow.getContext('2d')!;
+
+    // Pointer: the target, the eased head, a slower trail, the eased strength.
+    let tx = 0, ty = 0, px = 0, py = 0, qx = 0, qy = 0, strength = 0, active = false;
+    let visible = true, running = false, frame = 0, last = 0, t = 0;
+    let perfSum = 0, perfFrames = 0;
+
+    function readColors() {
+      const style = getComputedStyle(root);
+      dot = style.getPropertyValue('--hero-dot').trim() || 'rgba(255,255,255,.16)';
+      hot = style.getPropertyValue('--hero-dot-hot').trim() || style.getPropertyValue('--citrus').trim() || '#c8f26d';
+      const glowColor = style.getPropertyValue('--hero-glow').trim() || 'rgba(200,242,109,.06)';
+      const px2 = Math.ceil(GLOW * 2 * dpr);
+      glow.width = glow.height = px2;
+      const g = glowCtx.createRadialGradient(px2 / 2, px2 / 2, 0, px2 / 2, px2 / 2, px2 / 2);
+      g.addColorStop(0, glowColor);
+      g.addColorStop(0.45, glowColor.replace(/[\d.]+\)$/, (m) => `${parseFloat(m) * 0.45})`));
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      glowCtx.clearRect(0, 0, px2, px2);
+      glowCtx.fillStyle = g;
+      glowCtx.fillRect(0, 0, px2, px2);
+    }
+
+    function layout() {
+      const rect = hero.getBoundingClientRect();
+      w = Math.max(1, Math.round(rect.width));
+      h = Math.max(1, Math.round(rect.height));
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      cx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      let s = SPACING;
+      if ((w / s + 2) * (h / s + 2) > MAX_DOTS) s = Math.sqrt((w * h) / MAX_DOTS) + 1;
+      const cols = Math.ceil(w / s) + 2;
+      const rows = Math.ceil(h / s) + 2;
+      n = Math.min(MAX_DOTS, cols * rows);
+      bx = new Float32Array(n); by = new Float32Array(n); side = new Float32Array(n);
+      size = new Float32Array(n); bright = new Float32Array(n); tphase = new Float32Array(n);
+      tspeed = new Float32Array(n); pick = new Float32Array(n);
+      hotF = new Float32Array(n); dxs = new Float32Array(n); dys = new Float32Array(n);
+      baseBuckets = new Uint16Array(BASE_LEVELS * n);
+      hotBuckets = new Uint16Array(HOT_LEVELS * n);
+      const stacked = w < STACKED;
+      const ox = (w - (cols - 1) * s) / 2, oy = (h - (rows - 1) * s) / 2;
+      seed = 0x2545f491;
+      let i = 0;
+      for (let r = 0; r < rows && i < n; r++) {
+        for (let c = 0; c < cols && i < n; c++, i++) {
+          const x = ox + c * s, y = oy + r * s;
+          bx[i] = x; by[i] = y;
+          // Faint over the copy (left, or top when stacked), full around the device.
+          side[i] = 0.12 + 0.88 * (stacked ? smooth(0.3, 0.75, y / h) : smooth(0.12, 0.62, x / w));
+          size[i] = 0.7 + rand() * 0.75;
+          bright[i] = 0.35 + rand() * 0.65;
+          tphase[i] = rand() * Math.PI * 2;
+          tspeed[i] = 0.4 + rand() * 1.4;
+          // Most dots barely react; a few light up well above their neighbours.
+          const p = rand();
+          pick[i] = 0.25 + p * p * 1.35;
+        }
+      }
+      if (!active) { px = qx = tx = w * 0.72; py = qy = ty = h * 0.5; }
+      readColors();
+      if (!running) draw(0);
+    }
+
+    function draw(dt: number) {
+      const start = perf ? performance.now() : 0;
+      t += dt;
+      // Ease the pointer, its trail (slower) and its strength, frame-rate independent.
+      const k = 1 - Math.exp(-dt * 6);
+      px += (tx - px) * k;
+      py += (ty - py) * k;
+      const kt = 1 - Math.exp(-dt * 2.2);
+      qx += (px - qx) * kt;
+      qy += (py - qy) * kt;
+      strength += ((active ? 1 : 0) - strength) * (1 - Math.exp(-dt * (active ? 4 : 1.6)));
+
+      const c = cx!;
+      c.clearRect(0, 0, w, h);
+
+      // A small, faint halo under the dots.
+      if (strength > 0.01) {
+        c.globalAlpha = strength;
+        c.drawImage(glow, px - GLOW, py - GLOW, GLOW * 2, GLOW * 2);
+      }
+
+      const nt = t * 0.035;
+      baseCount.fill(0);
+      hotCount.fill(0);
+      for (let i = 0; i < n; i++) {
+        let x = bx[i], y = by[i];
+        // Where the grid shimmers: a drifting noise field, sharpened so most
+        // of it stays quiet; each dot twinkles on its own clock.
+        const field = noise(x * 0.006 + nt, y * 0.006 - nt * 0.7);
+        const lit = field * field * field;
+        const twinkle = 0.5 + 0.5 * Math.sin(tphase[i] + t * tspeed[i]);
+        const a = side[i] * bright[i] * (0.18 + 0.82 * lit) * (0.45 + 0.55 * twinkle);
+        x += (noise(x * 0.02 + 7.1, y * 0.02 + nt * 2) - 0.5) * 1.6;
+        y += (noise(x * 0.02 + 3.3 + nt * 2, y * 0.02) - 0.5) * 1.6;
+
+        let f = 0;
+        if (strength > 0.01) {
+          // The reach wobbles with the noise; the trail keeps a weaker reach.
+          const reach = REACH * (0.7 + 0.6 * noise(x * 0.012 + nt * 3, y * 0.012));
+          const r2 = reach * reach;
+          const ex = x - px, ey = y - py, d2 = ex * ex + ey * ey;
+          const fx = x - qx, fy = y - qy, e2 = fx * fx + fy * fy;
+          let head = 0, trail = 0;
+          if (d2 < r2) { const q = 1 - d2 / r2; head = q * q; }
+          if (e2 < r2 * 0.6) { const q = 1 - e2 / (r2 * 0.6); trail = q * q * 0.5; }
+          f = Math.min(1, Math.max(head, trail) * pick[i] * (0.6 + 0.4 * twinkle)) * strength;
+          if (f > 0.02 && d2 > 1) {
+            const len = Math.sqrt(d2);
+            x += (ex / len) * f * 4;
+            y += (ey / len) * f * 4;
+          }
+        }
+        dxs[i] = x; dys[i] = y; hotF[i] = f;
+        const level = Math.min(BASE_LEVELS - 1, (a * BASE_LEVELS) | 0);
+        baseBuckets[level * n + baseCount[level]++] = i;
+        if (f > 0.06) {
+          const hl = Math.min(HOT_LEVELS - 1, (f * HOT_LEVELS) | 0);
+          hotBuckets[hl * n + hotCount[hl]++] = i;
+        }
+      }
+
+      // Base dots: one path per alpha level, each at its own size.
+      c.fillStyle = dot;
+      for (let l = 0; l < BASE_LEVELS; l++) {
+        const count = baseCount[l];
+        if (!count) continue;
+        c.globalAlpha = (l + 0.5) / BASE_LEVELS;
+        c.beginPath();
+        const off = l * n;
+        for (let j = 0; j < count; j++) {
+          const i = baseBuckets[off + j];
+          const r = 0.8 * size[i];
+          c.rect(dxs[i] - r, dys[i] - r, r * 2, r * 2);
+        }
+        c.fill();
+      }
+
+      // Lit dots near the pointer: round, a little larger, in the accent.
+      c.fillStyle = hot;
+      for (let l = 0; l < HOT_LEVELS; l++) {
+        const count = hotCount[l];
+        if (!count) continue;
+        const level = (l + 1) / HOT_LEVELS;
+        c.beginPath();
+        const off = l * n;
+        for (let j = 0; j < count; j++) {
+          const i = hotBuckets[off + j];
+          const x = dxs[i], y = dys[i];
+          const r = size[i] * (0.9 + 1.5 * level);
+          c.moveTo(x + r, y);
+          c.arc(x, y, r, 0, Math.PI * 2);
+        }
+        c.globalAlpha = 0.25 + 0.75 * level;
+        c.fill();
+      }
+      c.globalAlpha = 1;
+
+      if (perf) {
+        perfSum += performance.now() - start;
+        if (++perfFrames === 120) {
+          console.info('[hero-field]', `mean draw ${(perfSum / perfFrames).toFixed(3)} ms over ${perfFrames} frames, ${n} dots`);
+          perfSum = 0;
+          perfFrames = 0;
+        }
+      }
+    }
+    function tick(now: number) {
+      if (!running) return;
+      const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
+      last = now;
+      draw(dt);
+      frame = requestAnimationFrame(tick);
+    }
+
+    function update() {
+      const should = visible && !document.hidden && !reduced.matches;
+      if (should && !running) {
+        running = true;
+        last = 0;
+        frame = requestAnimationFrame(tick);
+      } else if (!should && running) {
+        running = false;
+        cancelAnimationFrame(frame);
+      }
+      if (reduced.matches) {
+        active = false;
+        strength = 0;
+        draw(0);
+      }
+    }
+
+    const aim = (clientX: number, clientY: number) => {
+      if (reduced.matches) return;
+      const rect = hero.getBoundingClientRect();
+      tx = clientX - rect.left;
+      ty = clientY - rect.top;
+      active = true;
+    };
+    const release = () => { active = false; };
+    hero.addEventListener('pointermove', (e) => aim(e.clientX, e.clientY), { passive: true });
+    hero.addEventListener('pointerdown', (e) => aim(e.clientX, e.clientY), { passive: true });
+    hero.addEventListener('pointerleave', release, { passive: true });
+    hero.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') release(); }, { passive: true });
+    hero.addEventListener('pointercancel', release, { passive: true });
+    // Scrolling cancels touch pointers; touch events keep following the finger.
+    hero.addEventListener('touchmove', (e) => { const p = e.touches[0]; if (p) aim(p.clientX, p.clientY); }, { passive: true });
+    hero.addEventListener('touchend', release, { passive: true });
+
+    new ResizeObserver(layout).observe(hero);
+    new IntersectionObserver((entries) => {
+      visible = entries[entries.length - 1].isIntersecting;
+      update();
+    }).observe(hero);
+    document.addEventListener('visibilitychange', update);
+    reduced.addEventListener('change', update);
+
+    const recolor = () => { readColors(); if (!running) draw(0); };
+    new MutationObserver(recolor).observe(root, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', recolor);
+
+    layout();
+    update();
+  }
+
+  for (const canvas of document.querySelectorAll<HTMLCanvasElement>('canvas.hero-field')) mount(canvas);
+</script>

@@ -1,0 +1,580 @@
+{
+ "toolchain": "1.99.0",
+ "machine": "arm64",
+ "cores": 18,
+ "runs": 3,
+ "cold_runs": 1,
+ "commit": "1645168dc4abbdfab2e234232efb73a5c1ec2935",
+ "date": "2026-10-21T21:34:57Z",
+ "host": {
+  "name": null,
+  "cpu": "Apple M5 Max",
+  "cores": 18,
+  "machine_cores": 18,
+  "load": "27.8, 39.6, 44.9",
+  "memory_gib": 128,
+  "os": "Darwin",
+  "arch": "arm64",
+  "kernel": "27.0.0",
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "cc": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
+  "ld": "ld: unknown options: --version",
+  "llvm": null,
+  "incremental": "profile default (on for dev)",
+  "wrapper": null,
+  "linker": "the toolchain's default (cc)",
+  "library_dirs": null
+ },
+ "backends": {
+  "cranelift": {
+   "RA_JIT_BACKEND": "cranelift"
+  }
+ },
+ "setups": {},
+ "results": {
+  "bun/cranelift": {
+   "phases": {
+    "cold": {
+     "wall_s": 291.41,
+     "cargo_s": 106.419,
+     "rss_mb": 37556,
+     "built": "cargo",
+     "build_s": 163.724,
+     "warm_s": 127.686,
+     "samples_s": [
+      291.41
+     ],
+     "cargo_samples_s": [
+      106.419
+     ],
+     "build_samples_s": [
+      163.724
+     ],
+     "setups": {},
+     "compiled": 440560,
+     "steps_s": {
+      "load": 6.9,
+      "resolve": 18.0,
+      "compile": 119.5,
+      "emit": 0.505,
+      "link": 2.8
+     },
+     "threads_s": {
+      "infer": 334.8,
+      "mir": 106.4,
+      "monomorphize": 29.0,
+      "translate": 220.0,
+      "describe": 22.5,
+      "store read": 4.4,
+      "store write": 11.5,
+      "cranelift": 81.3
+     },
+     "started_over": [
+      "a static is used by a function left to rustc",
+      "a static is used by a function left to rustc",
+      "a static is used by a function left to rustc",
+      "a static is used by a function left to rustc",
+      "58 instances did not compile, the first: unsupported: callee `execute_until`: unsupported: callee `fire`: unsupported: writable static `CURRENT_TIME` without a rustc symbol"
+     ],
+     "memory": {
+      "ra-jit": {
+       "peak_mb": 37556,
+       "peak_max_mb": 37556,
+       "largest_mb": 37522,
+       "resident_mb": 27588
+      },
+      "cargo": {
+       "peak_mb": 3143,
+       "peak_max_mb": 3143,
+       "largest_mb": 2657
+      }
+     },
+     "disk_mb": {
+      "target": 8006,
+      "store": 2713,
+      "home": 1,
+      "cargo target": 4806
+     },
+     "warm_store_build_s": 97.449,
+     "warm_store_s": 195.474,
+     "warm_store_samples_s": [
+      195.474
+     ],
+     "warm_store_memory": {
+      "peak_mb": 43626,
+      "resident_mb": 29209
+     }
+    },
+    "no-op": {
+     "memory": {
+      "ra-jit": {
+       "peak_mb": 28087,
+       "peak_max_mb": 28549,
+       "largest_mb": 27088,
+       "resident_mb": 28078
+      },
+      "cargo": {
+       "peak_mb": 77,
+       "peak_max_mb": 77,
+       "largest_mb": 77
+      }
+     },
+     "wall_s": 0.073,
+     "cargo_s": 0.168,
+     "rss_mb": 37556,
+     "built": "daemon",
+     "compiled": 0,
+     "samples_s": [
+      0.073,
+      0.075,
+      0.061
+     ],
+     "cargo_samples_s": [
+      0.203,
+      0.168,
+      0.161
+     ],
+     "setups": {}
+    },
+    "body": {
+     "memory": {
+      "ra-jit": {
+       "peak_mb": 28669,
+       "peak_max_mb": 28741,
+       "largest_mb": 27672,
+       "resident_mb": 28612
+      },
+      "cargo": {
+       "peak_mb": 2088,
+       "peak_max_mb": 2097,
+       "largest_mb": 2088
+      }
+     },
+     "wall_s": 1.089,
+     "cargo_s": 12.163,
+     "rss_mb": 37556,
+     "built": "daemon",
+     "link": "spliced",
+     "compiled": 1,
+     "places": 1,
+     "steps_ms": {
+      "settle": 0.73,
+      "read": 155.41,
+      "apply": 34.01,
+      "roots": 5.54,
+      "check": 271.92,
+      "reach": 0.8,
+      "resolve": 0.08,
+      "define": 0.0,
+      "object": 0.16,
+      "discarded": 0.0,
+      "statics": 2.12,
+      "setup": 0.69,
+      "compile-rest": 3.64,
+      "write": 1023.88,
+      "build-rest": 10.41,
+      "report": 6.74,
+      "refuse": 442.96,
+      "link": 276.19
+     },
+     "threads_s": {
+      "infer": 0.0,
+      "mir": 0.0,
+      "monomorphize": 0.0,
+      "translate": 0.003,
+      "describe": 0.0,
+      "store read": 0.0,
+      "store write": 0.0,
+      "cranelift": 0.0
+     },
+     "started_over": [],
+     "slowest_s": 2.412,
+     "back_s": 1.883,
+     "back_cargo_s": 11.421,
+     "back_link": "spliced",
+     "samples_s": [
+      2.412,
+      1.089,
+      1.024
+     ],
+     "cargo_samples_s": [
+      15.035,
+      12.163,
+      11.413
+     ],
+     "setups": {}
+    },
+    "signature": {
+     "memory": {
+      "ra-jit": {
+       "peak_mb": 39580,
+       "peak_max_mb": 39580,
+       "largest_mb": 38591,
+       "resident_mb": 27069
+      },
+      "cargo": {
+       "peak_mb": 2105,
+       "peak_max_mb": 2105,
+       "largest_mb": 2105
+      }
+     },
+     "wall_s": 126.44,
+     "cargo_s": 9.829,
+     "rss_mb": 39580,
+     "built": "cargo: `run` is not compiled by ra-jit and rustc's copy is from before the edit: unsupported: callee `install`: unsupported: callee `posix_signal_handler`: unsupported: writable static `SHOULD_ABORT` without a rustc symbol",
+     "link": "full link: no executable to add to",
+     "compiled": 371432,
+     "places": 2,
+     "steps_ms": {
+      "settle": 0.0,
+      "read": 1.01,
+      "apply": 0.14,
+      "roots": 5.01,
+      "check": 301.03,
+      "reach": 2124.8,
+      "resolve": 5105.57,
+      "define": 1619.38,
+      "object": 10888.21,
+      "discarded": 0.0,
+      "statics": 0.0,
+      "setup": 0.0,
+      "compile-rest": 17088.69,
+      "write": 528.05,
+      "build-rest": 15.68,
+      "report": 5.75,
+      "refuse": 13.54,
+      "link": 2052.39
+     },
+     "threads_s": {
+      "infer": 67.1,
+      "mir": 19.2,
+      "monomorphize": 44.3,
+      "translate": 240.2,
+      "describe": 30.0,
+      "store read": 95.012,
+      "store write": 5.574,
+      "cranelift": 22.3
+     },
+     "started_over": [
+      "a static is used by a function left to rustc",
+      "an entry of the store did not fit",
+      "a static is used by a function left to rustc",
+      "an entry of the store did not fit",
+      "a static is used by a function left to rustc",
+      "58 instances did not compile, the first: unsupported: callee `execute_until`: unsupported: callee `fire`: unsupported: writable static `CURRENT_TIME` without a rustc symbol"
+     ],
+     "slowest_s": 126.44,
+     "back_s": 76.65,
+     "back_cargo_s": 9.872,
+     "back_link": "full link: no executable to add to",
+     "samples_s": [
+      126.44
+     ],
+     "cargo_samples_s": [
+      9.829
+     ],
+     "setups": {}
+    },
+    "leaf": {
+     "memory": {
+      "ra-jit": {
+       "peak_mb": 28337,
+       "peak_max_mb": 28338,
+       "largest_mb": 27344,
+       "resident_mb": 28334
+      },
+      "cargo": {
+       "peak_mb": 2138,
+       "peak_max_mb": 2138,
+       "largest_mb": 2138
+      }
+     },
+     "wall_s": 1.806,
+     "cargo_s": 26.748,
+     "rss_mb": 39580,
+     "built": "daemon",
+     "link": "spliced",
+     "compiled": 1,
+     "places": 1,
+     "steps_ms": {
+      "settle": 3.38,
+      "read": 0.07,
+      "apply": 5.89,
+      "roots": 4.16,
+      "check": 315.23,
+      "reach": 0.55,
+      "resolve": 0.29,
+      "define": 0.03,
+      "object": 0.22,
+      "discarded": 0.0,
+      "statics": 2.07,
+      "setup": 0.57,
+      "compile-rest": 2.73,
+      "write": 1505.34,
+      "build-rest": 9.78,
+      "report": 5.98,
+      "refuse": 316.79,
+      "link": 124.42
+     },
+     "threads_s": {
+      "infer": 0.0,
+      "mir": 0.0,
+      "monomorphize": 0.0,
+      "translate": 0.0,
+      "describe": 0.0,
+      "store read": 0.0,
+      "store write": 0.0,
+      "cranelift": 0.0
+     },
+     "started_over": [],
+     "slowest_s": 2.374,
+     "back_s": 1.816,
+     "back_cargo_s": 23.983,
+     "back_link": "spliced",
+     "samples_s": [
+      1.806,
+      0.779,
+      2.374
+     ],
+     "cargo_samples_s": [
+      29.591,
+      20.907,
+      26.748
+     ],
+     "setups": {}
+    },
+    "generic": {
+     "memory": {
+      "ra-jit": {
+       "peak_mb": 39693,
+       "peak_max_mb": 42121,
+       "largest_mb": 38697,
+       "resident_mb": 28217
+      },
+      "cargo": {
+       "peak_mb": 2241,
+       "peak_max_mb": 2248,
+       "largest_mb": 2241
+      }
+     },
+     "wall_s": 72.522,
+     "cargo_s": 31.803,
+     "rss_mb": 43071,
+     "built": "daemon",
+     "link": "full link: the whole object was written again",
+     "compiled": 8020,
+     "places": 1,
+     "steps_ms": {
+      "settle": 3.38,
+      "read": 0.07,
+      "apply": 17.31,
+      "roots": 4.22,
+      "check": 1501.17,
+      "reach": 350.81,
+      "resolve": 2147.68,
+      "define": 549.31,
+      "object": 10055.31,
+      "discarded": 52492.65,
+      "statics": 0.0,
+      "setup": 0.0,
+      "compile-rest": 8243.36,
+      "write": 726.62,
+      "build-rest": 11.76,
+      "report": 21.23,
+      "refuse": 101.95,
+      "link": 2052.31
+     },
+     "threads_s": {
+      "infer": 0.0,
+      "mir": 0.0,
+      "monomorphize": 0.0,
+      "translate": 0.009,
+      "describe": 22.8,
+      "store read": 4.0,
+      "store write": 0.715,
+      "cranelift": 0.003
+     },
+     "started_over": [
+      "a static is used by a function left to rustc",
+      "a static is used by a function left to rustc",
+      "a static is used by a function left to rustc",
+      "a static is used by a function left to rustc",
+      "58 instances did not compile, the first: unsupported: callee `execute_until`: unsupported: callee `fire`: unsupported: writable static `CURRENT_TIME` without a rustc symbol"
+     ],
+     "slowest_s": 78.343,
+     "back_s": 65.18,
+     "back_cargo_s": 25.331,
+     "back_link": "full link: the whole object was written again",
+     "samples_s": [
+      72.522,
+      78.343,
+      71.857
+     ],
+     "cargo_samples_s": [
+      34.14,
+      31.803,
+      25.09
+     ],
+     "setups": {}
+    },
+    "newfn": {
+     "memory": {
+      "ra-jit": {
+       "peak_mb": 39512,
+       "peak_max_mb": 39646,
+       "largest_mb": 38515,
+       "resident_mb": 28243
+      },
+      "cargo": {
+       "peak_mb": 2238,
+       "peak_max_mb": 2272,
+       "largest_mb": 2238
+      }
+     },
+     "wall_s": 50.501,
+     "cargo_s": 12.25,
+     "rss_mb": 43071,
+     "built": "daemon",
+     "link": "full link: the whole object was written again",
+     "compiled": 2,
+     "places": 2,
+     "steps_ms": {
+      "settle": 1.54,
+      "read": 9.38,
+      "apply": 232.05,
+      "roots": 130.41,
+      "check": 478.27,
+      "reach": 497.22,
+      "resolve": 3252.35,
+      "define": 977.37,
+      "object": 3624.59,
+      "discarded": 34585.24,
+      "statics": 0.0,
+      "setup": 0.0,
+      "compile-rest": 8302.27,
+      "write": 456.18,
+      "build-rest": 11.02,
+      "report": 5.2,
+      "refuse": 4.79,
+      "link": 1508.88
+     },
+     "threads_s": {
+      "infer": 0.0,
+      "mir": 0.0,
+      "monomorphize": 0.0,
+      "translate": 0.0,
+      "describe": 14.3,
+      "store read": 3.6,
+      "store write": 0.598,
+      "cranelift": 0.0
+     },
+     "started_over": [
+      "a static is used by a function left to rustc",
+      "a static is used by a function left to rustc",
+      "a static is used by a function left to rustc",
+      "a static is used by a function left to rustc",
+      "58 instances did not compile, the first: unsupported: callee `execute_until`: unsupported: callee `fire`: unsupported: writable static `CURRENT_TIME` without a rustc symbol"
+     ],
+     "slowest_s": 54.182,
+     "back_s": 62.044,
+     "back_cargo_s": 12.182,
+     "back_link": "full link: the whole object was written again",
+     "samples_s": [
+      54.182,
+      48.007,
+      50.501
+     ],
+     "cargo_samples_s": [
+      19.06,
+      10.94,
+      12.25
+     ],
+     "setups": {}
+    }
+   },
+   "wrong": [],
+   "tag": "bun-v1.4.3",
+   "rev": "c6da4a4d3010e5553438c60f6bd76d981976867c",
+   "store_mb": 2825,
+   "cold_runs": 1,
+   "resident": {
+    "ready_mb": 27588,
+    "after": [
+     {
+      "phase": "no-op",
+      "builds": 3,
+      "mb": 28078
+     },
+     {
+      "phase": "body",
+      "builds": 9,
+      "mb": 28612
+     },
+     {
+      "phase": "signature",
+      "builds": 11,
+      "mb": 27069
+     },
+     {
+      "phase": "leaf",
+      "builds": 17,
+      "mb": 28334
+     },
+     {
+      "phase": "generic",
+      "builds": 23,
+      "mb": 28217
+     },
+     {
+      "phase": "newfn",
+      "builds": 29,
+      "mb": 28243
+     }
+    ],
+    "end_mb": 28243,
+    "builds": 29
+   },
+   "disk_mb": {
+    "target": 9890,
+    "store": 2828,
+    "home": 7,
+    "cargo target": 5875
+   },
+   "toolchain": "nightly-2026-09-15",
+   "runtime": {
+    "command": [
+     "bun",
+     "-e",
+     "const t = new Bun.Transpiler({ loader: 'ts', minifyWhitespace: true }); const fs = require('fs'); const sources = ['http2', 'net', '_http_server', 'fs', 'child_process'].map(n => fs.readFileSync('src/js/node/' + n + '.ts', 'utf8')); let n = 0; for (let i = 0; i < 20; i++) for (const s of sources) n += t.transformSync(s).length; console.log(n)"
+    ],
+    "ra-jit": {
+     "median_s": 1.0604,
+     "min_s": 0.9541,
+     "max_s": 1.1103,
+     "runs": 10,
+     "peak_mb": 71,
+     "peak_max_mb": 71,
+     "size_mb": 384.4
+    },
+    "cargo debug": {
+     "median_s": 0.754,
+     "min_s": 0.6904,
+     "max_s": 0.8243,
+     "runs": 10,
+     "peak_mb": 56,
+     "peak_max_mb": 56,
+     "size_mb": 189.6
+    },
+    "cargo release": {
+     "median_s": 0.1174,
+     "min_s": 0.1057,
+     "max_s": 0.1215,
+     "runs": 10,
+     "peak_mb": 42,
+     "peak_max_mb": 42,
+     "size_mb": 91.8
+    }
+   }
+  }
+ }
+}

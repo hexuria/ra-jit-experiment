@@ -1,0 +1,1119 @@
+{
+ "toolchain": "1.99.0",
+ "commit": "9c31e64d83cd4cc2d0bbbd2e56b7e48d8a9326c6",
+ "date": "2026-10-23T00:26:08Z",
+ "host": {
+  "name": "AWS c8g.8xlarge (Graviton4), pinned to 16 cores with taskset",
+  "cpu": "Neoverse-V2",
+  "cores": 16,
+  "machine_cores": 32,
+  "load": "12.0, 8.7, 6.4",
+  "memory_gib": 62,
+  "os": "Linux",
+  "arch": "aarch64",
+  "kernel": "6.18.53",
+  "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "cc": "gcc (GCC) 16.2.0",
+  "ld": "GNU ld (GNU Binutils) 2.46",
+  "llvm": "20.1.8",
+  "incremental": "profile default (on for dev)",
+  "wrapper": null,
+  "linker": "the toolchain's default (cc)",
+  "library_dirs": 72
+ },
+ "runbench": {
+  "builds": [
+   "release",
+   "checked",
+   "ra-jit"
+  ],
+  "variants": {},
+  "programs": {
+   "kernels": {
+    "builds": {
+     "release": {
+      "build_s": 0.5,
+      "build_peak_mb": 190,
+      "build_largest_mb": 168,
+      "size_mb": 0.55
+     },
+     "checked": {
+      "build_s": 0.5,
+      "build_peak_mb": 186,
+      "build_largest_mb": 172,
+      "size_mb": 0.56
+     },
+     "ra-jit": {
+      "build_s": 4.1,
+      "cargo_s": 0.4,
+      "ra_jit_s": 3.5,
+      "link_s": 0.2,
+      "compiled": 10,
+      "left": 0,
+      "reasons": {},
+      "build_peak_mb": 1555,
+      "build_largest_mb": 1525,
+      "size_mb": 1.62
+     }
+    },
+    "benches": {
+     "sieve": {
+      "release": {
+       "median_s": 0.044,
+       "ratio": 1.0,
+       "runs": [
+        0.0457,
+        0.0422,
+        0.043,
+        0.043,
+        0.0446,
+        0.044,
+        0.0441,
+        0.0423,
+        0.0463,
+        0.0441
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "checked": {
+       "median_s": 0.0449,
+       "ratio": 1.02,
+       "runs": [
+        0.0427,
+        0.0485,
+        0.0425,
+        0.0456,
+        0.0457,
+        0.0432,
+        0.0442,
+        0.0431,
+        0.0456,
+        0.0465
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "ra-jit": {
+       "median_s": 0.0466,
+       "ratio": 1.059,
+       "runs": [
+        0.0463,
+        0.0456,
+        0.0469,
+        0.0462,
+        0.0459,
+        0.0507,
+        0.048,
+        0.047,
+        0.046,
+        0.0477
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      }
+     },
+     "collatz": {
+      "release": {
+       "median_s": 0.1055,
+       "ratio": 1.0,
+       "runs": [
+        0.1054,
+        0.1054,
+        0.1055,
+        0.1055,
+        0.1055,
+        0.1055,
+        0.1054,
+        0.1055,
+        0.1055,
+        0.1056
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "checked": {
+       "median_s": 0.2021,
+       "ratio": 1.916,
+       "runs": [
+        0.2017,
+        0.2019,
+        0.2021,
+        0.2018,
+        0.2023,
+        0.2017,
+        0.2021,
+        0.2021,
+        0.2022,
+        0.2022
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "ra-jit": {
+       "median_s": 0.1055,
+       "ratio": 1.0,
+       "runs": [
+        0.1053,
+        0.1055,
+        0.1056,
+        0.1055,
+        0.1054,
+        0.1054,
+        0.1056,
+        0.1055,
+        0.105,
+        0.1056
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      }
+     },
+     "fnv": {
+      "release": {
+       "median_s": 0.0714,
+       "ratio": 1.0,
+       "runs": [
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0713
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "checked": {
+       "median_s": 0.0714,
+       "ratio": 1.0,
+       "runs": [
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714,
+        0.0714
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "ra-jit": {
+       "median_s": 0.0733,
+       "ratio": 1.026,
+       "runs": [
+        0.0733,
+        0.0736,
+        0.0734,
+        0.0731,
+        0.0732,
+        0.0731,
+        0.0732,
+        0.0733,
+        0.0731,
+        0.0733
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      }
+     },
+     "qsort": {
+      "release": {
+       "median_s": 0.1982,
+       "ratio": 1.0,
+       "runs": [
+        0.1985,
+        0.1985,
+        0.1982,
+        0.1984,
+        0.1983,
+        0.1981,
+        0.1983,
+        0.1982,
+        0.1982,
+        0.198
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "checked": {
+       "median_s": 0.2097,
+       "ratio": 1.058,
+       "runs": [
+        0.2098,
+        0.2098,
+        0.2097,
+        0.2097,
+        0.2098,
+        0.2097,
+        0.2094,
+        0.2096,
+        0.2098,
+        0.2097
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "ra-jit": {
+       "median_s": 0.2147,
+       "ratio": 1.083,
+       "runs": [
+        0.215,
+        0.2146,
+        0.2146,
+        0.215,
+        0.2147,
+        0.2147,
+        0.2148,
+        0.2145,
+        0.2148,
+        0.215
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      }
+     },
+     "matmul": {
+      "release": {
+       "median_s": 0.0279,
+       "ratio": 1.0,
+       "runs": [
+        0.0279,
+        0.028,
+        0.0279,
+        0.028,
+        0.0279,
+        0.0279,
+        0.028,
+        0.0279,
+        0.028,
+        0.0278
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "checked": {
+       "median_s": 0.0279,
+       "ratio": 1.0,
+       "runs": [
+        0.028,
+        0.0279,
+        0.028,
+        0.028,
+        0.0279,
+        0.0278,
+        0.0279,
+        0.0279,
+        0.0279,
+        0.0278
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "ra-jit": {
+       "median_s": 0.0291,
+       "ratio": 1.042,
+       "runs": [
+        0.0294,
+        0.031,
+        0.0296,
+        0.0293,
+        0.0292,
+        0.029,
+        0.0287,
+        0.0288,
+        0.0289,
+        0.029
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      }
+     },
+     "nbody": {
+      "release": {
+       "median_s": 0.036,
+       "ratio": 1.0,
+       "runs": [
+        0.036,
+        0.036,
+        0.0361,
+        0.0361,
+        0.036,
+        0.036,
+        0.0359,
+        0.036,
+        0.0359,
+        0.036
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "checked": {
+       "median_s": 0.036,
+       "ratio": 1.0,
+       "runs": [
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036,
+        0.036
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "ra-jit": {
+       "median_s": 0.0461,
+       "ratio": 1.28,
+       "runs": [
+        0.0461,
+        0.0461,
+        0.0461,
+        0.0461,
+        0.0461,
+        0.0461,
+        0.0461,
+        0.0461,
+        0.0461,
+        0.0461
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      }
+     },
+     "mandelbrot": {
+      "release": {
+       "median_s": 0.2696,
+       "ratio": 1.0,
+       "runs": [
+        0.2696,
+        0.2696,
+        0.2696,
+        0.2695,
+        0.2695,
+        0.2695,
+        0.2695,
+        0.2697,
+        0.2696,
+        0.2697
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "checked": {
+       "median_s": 0.2694,
+       "ratio": 1.0,
+       "runs": [
+        0.2695,
+        0.2694,
+        0.2695,
+        0.2694,
+        0.2694,
+        0.2694,
+        0.2695,
+        0.2696,
+        0.2694,
+        0.2695
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "ra-jit": {
+       "median_s": 0.2695,
+       "ratio": 1.0,
+       "runs": [
+        0.2695,
+        0.2694,
+        0.2695,
+        0.2695,
+        0.2695,
+        0.2695,
+        0.2696,
+        0.2695,
+        0.2695,
+        0.2696
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      }
+     },
+     "words": {
+      "release": {
+       "median_s": 0.0607,
+       "ratio": 1.0,
+       "runs": [
+        0.0607,
+        0.0606,
+        0.0608,
+        0.0608,
+        0.0607,
+        0.0608,
+        0.0608,
+        0.0605,
+        0.0603,
+        0.0605
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "checked": {
+       "median_s": 0.0628,
+       "ratio": 1.035,
+       "runs": [
+        0.0628,
+        0.0628,
+        0.0629,
+        0.0627,
+        0.0628,
+        0.0629,
+        0.0628,
+        0.0628,
+        0.0627,
+        0.0629
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      },
+      "ra-jit": {
+       "median_s": 0.0789,
+       "ratio": 1.3,
+       "runs": [
+        0.0788,
+        0.0789,
+        0.079,
+        0.0789,
+        0.0789,
+        0.0789,
+        0.0788,
+        0.0788,
+        0.0788,
+        0.079
+       ],
+       "peak_mb": 23,
+       "peak_max_mb": 23
+      }
+     }
+    }
+   },
+   "numeric": {
+    "builds": {
+     "release": {
+      "build_s": 3.3,
+      "build_peak_mb": 602,
+      "build_largest_mb": 310,
+      "size_mb": 0.88
+     },
+     "checked": {
+      "build_s": 3.3,
+      "build_peak_mb": 594,
+      "build_largest_mb": 309,
+      "size_mb": 0.92
+     },
+     "ra-jit": {
+      "build_s": 11.0,
+      "cargo_s": 0.8,
+      "ra_jit_s": 9.9,
+      "link_s": 0.3,
+      "compiled": 135,
+      "left": 0,
+      "reasons": {},
+      "build_peak_mb": 1988,
+      "build_largest_mb": 1958,
+      "size_mb": 2.14
+     }
+    },
+    "benches": {
+     "numeric": {
+      "release": {
+       "median_s": 0.0231,
+       "ratio": 1.0,
+       "runs": [
+        0.0233,
+        0.0256,
+        0.0232,
+        0.0226,
+        0.0231,
+        0.023,
+        0.0229,
+        0.0232,
+        0.0231,
+        0.0225
+       ],
+       "peak_mb": 41,
+       "peak_max_mb": 41
+      },
+      "checked": {
+       "median_s": 0.0255,
+       "ratio": 1.104,
+       "runs": [
+        0.0259,
+        0.026,
+        0.0261,
+        0.0254,
+        0.0254,
+        0.0258,
+        0.0254,
+        0.0256,
+        0.0254,
+        0.0252
+       ],
+       "peak_mb": 41,
+       "peak_max_mb": 41
+      },
+      "ra-jit": {
+       "median_s": 0.0272,
+       "ratio": 1.177,
+       "runs": [
+        0.0294,
+        0.0269,
+        0.0283,
+        0.0271,
+        0.027,
+        0.0277,
+        0.0272,
+        0.0272,
+        0.0276,
+        0.0269
+       ],
+       "peak_mb": 42,
+       "peak_max_mb": 43
+      }
+     }
+    }
+   },
+   "jsonrt": {
+    "builds": {
+     "release": {
+      "build_s": 6.3,
+      "build_peak_mb": 2026,
+      "build_largest_mb": 440,
+      "size_mb": 1.09
+     },
+     "checked": {
+      "build_s": 6.5,
+      "build_peak_mb": 2087,
+      "build_largest_mb": 440,
+      "size_mb": 1.3
+     },
+     "ra-jit": {
+      "build_s": 18.2,
+      "cargo_s": 3.7,
+      "ra_jit_s": 14.2,
+      "link_s": 0.3,
+      "compiled": 278,
+      "left": 0,
+      "reasons": {},
+      "build_peak_mb": 2800,
+      "build_largest_mb": 2763,
+      "size_mb": 2.57
+     }
+    },
+    "benches": {
+     "jsonrt": {
+      "release": {
+       "median_s": 0.8615,
+       "ratio": 1.0,
+       "runs": [
+        0.8625,
+        0.8616,
+        0.861,
+        0.8613,
+        0.8607,
+        0.8618,
+        0.8609,
+        0.8618,
+        0.8614,
+        0.8619
+       ],
+       "peak_mb": 546,
+       "peak_max_mb": 546
+      },
+      "checked": {
+       "median_s": 0.9071,
+       "ratio": 1.053,
+       "runs": [
+        0.9065,
+        0.9069,
+        0.9075,
+        0.9065,
+        0.9075,
+        0.9093,
+        0.9066,
+        0.9072,
+        0.9074,
+        0.9062
+       ],
+       "peak_mb": 546,
+       "peak_max_mb": 546
+      },
+      "ra-jit": {
+       "median_s": 1.2579,
+       "ratio": 1.46,
+       "runs": [
+        1.2584,
+        1.257,
+        1.258,
+        1.2572,
+        1.2597,
+        1.2568,
+        1.2586,
+        1.2579,
+        1.2587,
+        1.2579
+       ],
+       "peak_mb": 548,
+       "peak_max_mb": 548
+      }
+     }
+    }
+   },
+   "ripgrep": {
+    "builds": {
+     "release": {
+      "build_s": 9.0,
+      "build_peak_mb": 2384,
+      "build_largest_mb": 719,
+      "size_mb": 32.22
+     },
+     "checked": {
+      "build_s": 8.9,
+      "build_peak_mb": 2263,
+      "build_largest_mb": 699,
+      "size_mb": 33.83
+     },
+     "ra-jit": {
+      "build_s": 48.6,
+      "cargo_s": 1.1,
+      "ra_jit_s": 47.0,
+      "link_s": 0.6,
+      "compiled": 3356,
+      "left": 0,
+      "reasons": {},
+      "build_peak_mb": 4202,
+      "build_largest_mb": 4173,
+      "size_mb": 19.43
+     }
+    },
+    "benches": {
+     "ripgrep": {
+      "release": {
+       "median_s": 0.0568,
+       "ratio": 1.0,
+       "runs": [
+        0.057,
+        0.0567,
+        0.0571,
+        0.0566,
+        0.0569,
+        0.0566,
+        0.0565,
+        0.0567,
+        0.057,
+        0.057
+       ],
+       "peak_mb": 26,
+       "peak_max_mb": 26
+      },
+      "checked": {
+       "median_s": 0.0582,
+       "ratio": 1.024,
+       "runs": [
+        0.0586,
+        0.058,
+        0.0583,
+        0.058,
+        0.0583,
+        0.0581,
+        0.0581,
+        0.0581,
+        0.0582,
+        0.0583
+       ],
+       "peak_mb": 26,
+       "peak_max_mb": 26
+      },
+      "ra-jit": {
+       "median_s": 0.0755,
+       "ratio": 1.328,
+       "runs": [
+        0.0754,
+        0.0755,
+        0.0753,
+        0.0755,
+        0.0758,
+        0.0755,
+        0.0755,
+        0.0754,
+        0.0755,
+        0.0753
+       ],
+       "peak_mb": 26,
+       "peak_max_mb": 26
+      }
+     }
+    }
+   },
+   "fd": {
+    "builds": {
+     "release": {
+      "build_s": 47.1,
+      "build_peak_mb": 2219,
+      "build_largest_mb": 789,
+      "size_mb": 3.74
+     },
+     "checked": {
+      "build_s": 48.6,
+      "build_peak_mb": 2202,
+      "build_largest_mb": 863,
+      "size_mb": 4.07
+     },
+     "ra-jit": {
+      "build_s": 69.0,
+      "cargo_s": 27.2,
+      "ra_jit_s": 41.1,
+      "link_s": 0.7,
+      "compiled": 3097,
+      "left": 0,
+      "reasons": {},
+      "build_peak_mb": 4138,
+      "build_largest_mb": 4099,
+      "size_mb": 7.03
+     }
+    },
+    "benches": {
+     "fd": {
+      "release": {
+       "median_s": 0.0183,
+       "ratio": 1.0,
+       "runs": [
+        0.0183,
+        0.0184,
+        0.0184,
+        0.0182,
+        0.0183,
+        0.0183,
+        0.0185,
+        0.0182,
+        0.0182,
+        0.0184
+       ],
+       "peak_mb": 26,
+       "peak_max_mb": 26
+      },
+      "checked": {
+       "median_s": 0.0187,
+       "ratio": 1.019,
+       "runs": [
+        0.0184,
+        0.0186,
+        0.0188,
+        0.0187,
+        0.0184,
+        0.0187,
+        0.0189,
+        0.0185,
+        0.0188,
+        0.0187
+       ],
+       "peak_mb": 26,
+       "peak_max_mb": 26
+      },
+      "ra-jit": {
+       "median_s": 0.0239,
+       "ratio": 1.306,
+       "runs": [
+        0.024,
+        0.0242,
+        0.0242,
+        0.024,
+        0.0237,
+        0.0239,
+        0.0241,
+        0.0238,
+        0.0235,
+        0.0239
+       ],
+       "peak_mb": 26,
+       "peak_max_mb": 26
+      }
+     }
+    }
+   },
+   "tokei": {
+    "builds": {
+     "release": {
+      "build_s": 13.8,
+      "build_peak_mb": 3398,
+      "build_largest_mb": 536,
+      "size_mb": 5.43
+     },
+     "checked": {
+      "build_s": 14.5,
+      "build_peak_mb": 3386,
+      "build_largest_mb": 575,
+      "size_mb": 6.54
+     },
+     "ra-jit": {
+      "build_s": 52.3,
+      "cargo_s": 8.9,
+      "ra_jit_s": 42.9,
+      "link_s": 0.5,
+      "compiled": 2861,
+      "left": 0,
+      "reasons": {},
+      "build_peak_mb": 4845,
+      "build_largest_mb": 4796,
+      "size_mb": 9.32
+     }
+    },
+    "benches": {
+     "tokei": {
+      "release": {
+       "median_s": 0.0879,
+       "ratio": 1.0,
+       "runs": [
+        0.0886,
+        0.0879,
+        0.0875,
+        0.0878,
+        0.0932,
+        0.0878,
+        0.0892,
+        0.088,
+        0.0878,
+        0.0881
+       ],
+       "peak_mb": 50,
+       "peak_max_mb": 54
+      },
+      "checked": {
+       "median_s": 0.0885,
+       "ratio": 1.006,
+       "runs": [
+        0.0907,
+        0.0893,
+        0.088,
+        0.0877,
+        0.0881,
+        0.0881,
+        0.0886,
+        0.0886,
+        0.0884,
+        0.0885
+       ],
+       "peak_mb": 52,
+       "peak_max_mb": 54
+      },
+      "ra-jit": {
+       "median_s": 0.1121,
+       "ratio": 1.275,
+       "runs": [
+        0.1123,
+        0.1118,
+        0.112,
+        0.1122,
+        0.1115,
+        0.1124,
+        0.1125,
+        0.1119,
+        0.1124,
+        0.1117
+       ],
+       "peak_mb": 53,
+       "peak_max_mb": 54
+      }
+     }
+    }
+   },
+   "eza": {
+    "builds": {
+     "release": {
+      "build_s": 35.7,
+      "build_peak_mb": 3392,
+      "build_largest_mb": 575,
+      "size_mb": 2.38
+     },
+     "checked": {
+      "build_s": 38.2,
+      "build_peak_mb": 3470,
+      "build_largest_mb": 623,
+      "size_mb": 2.71
+     },
+     "ra-jit": {
+      "build_s": 39.2,
+      "cargo_s": 8.7,
+      "ra_jit_s": 30.1,
+      "link_s": 0.4,
+      "compiled": 1558,
+      "left": 0,
+      "reasons": {},
+      "build_peak_mb": 4229,
+      "build_largest_mb": 4181,
+      "size_mb": 5.59
+     }
+    },
+    "benches": {
+     "eza": {
+      "release": {
+       "median_s": 0.2461,
+       "ratio": 1.0,
+       "runs": [
+        0.2435,
+        0.2458,
+        0.2625,
+        0.2223,
+        0.2647,
+        0.2389,
+        0.2374,
+        0.2464,
+        0.2699,
+        0.26
+       ],
+       "peak_mb": 46,
+       "peak_max_mb": 46
+      },
+      "checked": {
+       "median_s": 0.2623,
+       "ratio": 1.066,
+       "runs": [
+        0.2601,
+        0.2485,
+        0.2145,
+        0.2408,
+        0.2663,
+        0.2744,
+        0.2785,
+        0.2646,
+        0.2917,
+        0.2454
+       ],
+       "peak_mb": 45,
+       "peak_max_mb": 45
+      },
+      "ra-jit": {
+       "median_s": 0.2611,
+       "ratio": 1.061,
+       "runs": [
+        0.2814,
+        0.2604,
+        0.2971,
+        0.2472,
+        0.2478,
+        0.2617,
+        0.2589,
+        0.2841,
+        0.2647,
+        0.2437
+       ],
+       "peak_mb": 46,
+       "peak_max_mb": 47
+      }
+     }
+    }
+   },
+   "bat": {
+    "builds": {
+     "release": {
+      "build_s": 51.2,
+      "build_peak_mb": 3717,
+      "build_largest_mb": 1294,
+      "size_mb": 6.99
+     },
+     "checked": {
+      "build_s": 55.2,
+      "build_peak_mb": 3647,
+      "build_largest_mb": 1461,
+      "size_mb": 7.71
+     },
+     "ra-jit": {
+      "build_s": 122.7,
+      "cargo_s": 11.3,
+      "ra_jit_s": 110.5,
+      "link_s": 0.9,
+      "compiled": 5043,
+      "left": 0,
+      "reasons": {},
+      "build_peak_mb": 6609,
+      "build_largest_mb": 6561,
+      "size_mb": 13.03
+     }
+    },
+    "benches": {
+     "bat": {
+      "release": {
+       "median_s": 0.0881,
+       "ratio": 1.0,
+       "runs": [
+        0.0882,
+        0.0879,
+        0.0885,
+        0.088,
+        0.0892,
+        0.0884,
+        0.0884,
+        0.0876,
+        0.0876,
+        0.0877
+       ],
+       "peak_mb": 31,
+       "peak_max_mb": 31
+      },
+      "checked": {
+       "median_s": 0.0896,
+       "ratio": 1.017,
+       "runs": [
+        0.0895,
+        0.0889,
+        0.0902,
+        0.0896,
+        0.0895,
+        0.0898,
+        0.0896,
+        0.0895,
+        0.0897,
+        0.0896
+       ],
+       "peak_mb": 31,
+       "peak_max_mb": 31
+      },
+      "ra-jit": {
+       "median_s": 0.1025,
+       "ratio": 1.164,
+       "runs": [
+        0.1023,
+        0.1028,
+        0.1029,
+        0.1031,
+        0.1025,
+        0.1021,
+        0.1025,
+        0.1027,
+        0.1025,
+        0.1025
+       ],
+       "peak_mb": 31,
+       "peak_max_mb": 31
+      }
+     }
+    }
+   }
+  },
+  "geomean": {
+   "release": 1.0,
+   "checked": 1.0718432924605352,
+   "ra-jit": 1.1625441699014185
+  }
+ }
+}

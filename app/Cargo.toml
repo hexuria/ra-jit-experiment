@@ -1,0 +1,25 @@
+[package]
+name = "stack-native-app"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+nsh-core = { path = "../nsh/crates/nsh-core" }
+nsh-base = { path = "../nsh/crates/nsh-base" }
+ra-jit-live = { path = "../ra-jit/crates/ra-jit-live" }
+env_logger = "0.11"
+log = "0.4"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+nsh-platform-macos = { path = "../nsh/crates/nsh-platform-macos", default-features = false }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+nsh-platform-ios = { path = "../nsh/crates/nsh-platform-ios", default-features = false }
+nsh-ios-app = { path = "../nsh/crates/nsh-ios-app", default-features = false }
+
+# A binary per supported host target; the library is what the iOS runner and
+# nsh's generated workspace link.
+[lib]
+name = "stack_native_app"
+path = "src/lib.rs"

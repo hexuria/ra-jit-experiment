@@ -1,0 +1,122 @@
+name: release
+
+# A pushed tag `vX.Y.Z` builds ra-jit for Linux (x86_64, aarch64) and macOS (aarch64) and makes
+# a GitHub release of that name: one tarball per target, a `.sha256` per tarball, SHA256SUMS,
+# and the tag's CHANGELOG.md section as the notes. The tag must match the workspace version.
+# A manual run builds and checks the same archives without releasing anything.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_NET_RETRY: 10
+
+jobs:
+  notes:
+    name: version and notes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.notes.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      # On a tag: the tag is the workspace version and CHANGELOG.md has its section.
+      # By hand: the workspace version needs a section.
+      - id: notes
+        run: python3 -I .github/scripts/release_notes.py --tag "${{ github.ref_type == 'tag' && github.ref_name || '' }}" --out "$RUNNER_TEMP/notes.md"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: notes
+          path: ${{ runner.temp }}/notes.md
+          if-no-files-found: error
+
+  build:
+    name: ${{ matrix.target }}
+    needs: notes
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: aarch64-apple-darwin, os: macos-15 }
+          # The oldest hosted Ubuntu, so that the binaries ask for an old glibc.
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-22.04 }
+          - { target: aarch64-unknown-linux-gnu, os: ubuntu-22.04-arm }
+    env:
+      NAME: ra-jit-v${{ needs.notes.outputs.version }}-${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup toolchain install 1.99.0 --profile minimal && rustup default 1.99.0
+      # `ra-jit --version` names the commit, as the flake's build does.
+      - run: echo "RA_JIT_GIT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+      # No build cache: release binaries come from a clean build. Without the `llvm` feature:
+      # that one links libLLVM dynamically, which a machine that downloads the binary lacks.
+      # The recipe the flake's build runs too, with the profile pgo/profiles.json pins; a
+      # release refuses a profile trained on other crates (Cargo.lock or the toolchain moved
+      # since the pgo workflow last ran).
+      - run: python3 .github/scripts/build_release.py --target ${{ matrix.target }} --out shipped --strict
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "13.0"
+      - name: Archive
+        run: |
+          mkdir "$NAME"
+          cp LICENSE-APACHE LICENSE-MIT README.md CHANGELOG.md "$NAME"
+          cp shipped/* "$NAME"
+          "$NAME/ra-jit" --version | tee /dev/stderr | grep -F "ra-jit ${{ needs.notes.outputs.version }} "
+          tar czf "$NAME.tar.gz" "$NAME"
+          shasum -a 256 "$NAME.tar.gz" > "$NAME.tar.gz.sha256"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.NAME }}
+          path: ${{ env.NAME }}.tar.gz*
+          if-no-files-found: error
+
+  # ra-jit and the forks it depends on (`ra-jit-hir`, `ra-jit-rustc_abi`, ...) on crates.io, as
+  # its own job so it can be rerun alone: versions already published are skipped. Each crate is
+  # built first; crates.io's limit on new crates is waited out (a first release takes hours).
+  crates:
+    name: crates.io
+    needs: [notes, build]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup toolchain install 1.99.0 --profile minimal && rustup default 1.99.0
+      - run: python3 -I .github/scripts/publish_crates.py --publish --max-hours 5
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+  publish:
+    name: GitHub release
+    needs: [notes, build]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: out
+          merge-multiple: true
+      - name: Checksums
+        working-directory: out
+        run: sha256sum ra-jit-*.tar.gz | tee SHA256SUMS
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "ra-jit $GITHUB_REF_NAME" --notes-file out/notes.md \
+            out/ra-jit-*.tar.gz out/ra-jit-*.tar.gz.sha256 out/SHA256SUMS

@@ -1,0 +1,5 @@
+target/
+.nsh/
+*.log
+.DS_Store
+.env
