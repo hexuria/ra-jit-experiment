@@ -1,3 +1,0 @@
-[workspace]
-members = ["default_alloc", "custom_alloc", "counter", "lib_alloc", "cfg_alloc"]
-resolver = "2"
