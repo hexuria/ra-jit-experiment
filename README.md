@@ -132,8 +132,8 @@ levels → struct-layout boundary demo).
 
 ## Repositories
 
-This repo (`hexuria/ra-jit-experiment`) is a snapshot of the working tree.
-The components live as real forks:
+`nsh/` and `ra-jit/` are **git submodules** — clone with
+`git clone --recurse-submodules`. They point at our forks:
 
 - **`nsh/`** — [hexuria/native-shell](https://github.com/hexuria/native-shell),
   fork of `longbridge/nsh`, pinned at `c2f019e6`. Unmodified.
