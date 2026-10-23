@@ -141,7 +141,9 @@ The components live as real forks:
   of `indexable-inc/ra-jit`, at `4a8d2b5` plus the
   [`live-ios-sim-1023`](https://github.com/hexuria/ra-jit/tree/live-ios-sim-1023)
   branch:
-  [the diff](https://github.com/hexuria/ra-jit/compare/main...live-ios-sim-1023)
+  [the diff](https://github.com/hexuria/ra-jit/compare/upstream-base...live-ios-sim-1023)
   is the const-eval min/max intrinsics, ios-sim live patching,
-  `ra_jit_live::anchor`, and richer panic context.
+  `ra_jit_live::anchor`, and richer panic context. (`upstream-base` pins
+  the upstream commit the branch sits on — the fork's `main` is an
+  unrelated project.)
 - **`app/`** — original code, this repo only.
